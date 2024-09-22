@@ -1,14 +1,16 @@
 #pragma once
 #include "geo.h"
-#include <iostream>
 #include "input_reader.h"
+
 #include <deque>
-#include<unordered_map>
+#include <unordered_map>
 #include <string>
 #include <string_view>
-#include<optional>
+#include <optional>
 #include <set>
 #include <unordered_set>
+#include <iostream>
+
 
 struct Stop
 {
@@ -23,12 +25,12 @@ struct Bus
 class TransportCatalogue 
 {
 public:
-	void AddStop(const std::string, Coordinates);
-	Stop* FindStop(std::string) const;
+	void AddStop(const std::string&, Coordinates);
+	Stop* FindStop(std::string_view) const;
 	void AddBus(const std::string&, std::vector<std::string_view>);
-	Bus* FindBus(std::string) const;
-	std::optional<std::tuple<int, int, double>> GetBusInfo(const std::string) const;
-	const std::set<std::string>* GetBusesByStop(std::string) const;
+	Bus* FindBus(std::string_view) const;
+	std::optional<std::tuple<int, int, double>> GetBusInfo(const std::string_view) const;
+	const std::set<std::string>* GetBusesByStop(std::string_view) const;
 private:
 	std::deque<Stop> stops;
 	std::unordered_map<std::string_view, Stop*> stopname_to_stop;
