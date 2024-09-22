@@ -1,12 +1,12 @@
 #include "transport_catalogue.h"
 
-void TransportCatalogue::AddStop(const std::string stop_name, Coordinates coordinates)
+void TransportCatalogue::AddStop(const std::string& stop_name, Coordinates coordinates)
 {
 	stops.push_back({ stop_name, coordinates});
 	stopname_to_stop[stops.back().stop_name] = &stops.back();
 }
 
-Stop* TransportCatalogue::FindStop(std::string stop_name) const
+Stop* TransportCatalogue::FindStop(std::string_view stop_name) const
 {
     auto it = stopname_to_stop.find(stop_name); 
     if (it != stopname_to_stop.end()) 
@@ -33,7 +33,7 @@ void TransportCatalogue::AddBus(const std::string &bus_name, std::vector<std::st
 }
 
 
-Bus* TransportCatalogue::FindBus(std::string bus_name) const
+Bus* TransportCatalogue::FindBus(std::string_view bus_name) const
 {
     auto it = busname_to_bus.find(bus_name); 
     if (it != busname_to_bus.end()) 
@@ -43,7 +43,7 @@ Bus* TransportCatalogue::FindBus(std::string bus_name) const
     return nullptr;
 }
 
-const std::set<std::string>* TransportCatalogue::GetBusesByStop(std::string stop_name) const
+const std::set<std::string>* TransportCatalogue::GetBusesByStop(std::string_view stop_name) const
 {
     Stop* stop = FindStop(stop_name);
     if (stop && stop_to_buses.count(stop) > 0) 
@@ -53,7 +53,7 @@ const std::set<std::string>* TransportCatalogue::GetBusesByStop(std::string stop
     return nullptr; 
 }
 
-std::optional<std::tuple<int, int, double>> TransportCatalogue::GetBusInfo(const std::string bus_name) const
+std::optional<std::tuple<int, int, double>> TransportCatalogue::GetBusInfo(const std::string_view bus_name) const
 {
     Bus* bus = FindBus(bus_name);
     if (!bus) 
