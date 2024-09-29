@@ -1,15 +1,18 @@
 #include "stat_reader.h"
+
 void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output) 
 {
-    if (request.substr(0, 4) == "Bus ") {
+    if (request.substr(0, 4) == "Bus ") 
+    {
         std::string bus_name = std::string(request.substr(4));
         if (auto bus_info = transport_catalogue.GetBusInfo(bus_name)) 
         {
             int total_stops = std::get<0>(*bus_info);
             int unique_stops = std::get<1>(*bus_info);
-            double route_length = std::get<2>(*bus_info);
+            int full_route_length = std::get<2>(*bus_info);
+            double route_length = std::get<3>(*bus_info);
             output << "Bus " << bus_name << ": " << total_stops << " stops on route, "
-                << unique_stops << " unique stops, " << route_length << " route length\n";
+                << unique_stops << " unique stops, " << full_route_length << " route length, " << static_cast<double>(full_route_length)/route_length<<" curvature\n";
         }
         else 
         {
