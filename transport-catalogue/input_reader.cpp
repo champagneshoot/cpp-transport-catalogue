@@ -5,7 +5,7 @@
 #include <iterator>
 
 /**
- * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
+ * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота) и добавляет в distances_
  */
 Coordinates ParseCoordinates(std::string_view str) 
 {
@@ -14,7 +14,8 @@ Coordinates ParseCoordinates(std::string_view str)
     auto not_space = str.find_first_not_of(' ');
     auto comma = str.find(',');
 
-    if (comma == str.npos) {
+    if (comma == str.npos) 
+    {
         return { nan, nan };
     }
 
@@ -110,6 +111,40 @@ CommandDescription ParseCommandDescription(std::string_view line)
     };
 }
 
+void ParseStopWithDistances(std::string stop_name,std::string_view str, TransportCatalogue& transport_catalogue)
+{
+    
+    size_t pos = 0;
+    while ((pos = str.find("m to ", pos)) != std::string_view::npos)
+    {
+        size_t distance_start = str.rfind(' ', pos);
+        if (distance_start == std::string_view::npos)
+        {
+            break;
+        }
+
+        int distance = std::stoi(std::string(str.substr(distance_start + 1, pos - distance_start - 1)));
+        size_t stop_end = str.find(',', pos);
+        if (stop_end == std::string_view::npos)
+        {
+            stop_end = str.length();
+        }
+
+        std::string_view neighbor_stop = Trim(str.substr(pos + 5, stop_end - pos - 5));
+
+        Stop* stop_ptr = transport_catalogue.FindStop(std::string(stop_name));
+        Stop* neighbor_stop_ptr = transport_catalogue.FindStop(std::string(neighbor_stop));
+
+        if (stop_ptr && neighbor_stop_ptr) 
+        {
+            transport_catalogue.AddDistance(*stop_ptr, *neighbor_stop_ptr, distance);
+        }
+
+        pos = stop_end + 1;
+    }
+}
+
+
 void InputReader::ParseLine(std::string_view line) {
     auto command_description = ParseCommandDescription(line);
     if (command_description) {
@@ -119,7 +154,6 @@ void InputReader::ParseLine(std::string_view line) {
 
 void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) const
 {
-    // Реализуйте метод самостоятельно
     for (const auto& command : commands_)
     {
         if (command.command == "Stop")
@@ -128,7 +162,13 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
             catalogue.AddStop(command.id, coordinates);
         }
     }
-
+    for (const auto& command : commands_)
+    {
+        if (command.command == "Stop")
+        {
+            ParseStopWithDistances(command.id, command.description, catalogue);
+        }
+    }
     for (const auto& command : commands_)
     {
         if (command.command == "Bus")
