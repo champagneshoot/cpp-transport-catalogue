@@ -25,7 +25,14 @@ struct Bus
 class Hasher
 {
 public:
-	size_t operator()(const std::pair<Stop*, Stop*>& stop_pair) const;
+	size_t operator()(const std::pair<const Stop*, const Stop*>& stop_pair) const;
+};
+struct BusInfo
+{
+	int total_stops;
+	int unique_stops;
+	int full_route_length;
+	double curvature;
 };
 class TransportCatalogue 
 {
@@ -34,10 +41,11 @@ public:
 	Stop* FindStop(std::string_view) const;
 	void AddBus(const std::string&, std::vector<std::string_view>);
 	Bus* FindBus(std::string_view) const;
-	std::optional<std::tuple<int, int, int ,double>> GetBusInfo(const std::string_view) const;
-	const std::set<std::string>* GetBusesByStop(std::string_view) const;
-
-	void AddDistance(Stop&, Stop&, int);
+	std::optional<BusInfo> GetBusInfo(const std::string_view) const;
+	const std::set<std::string>* GetBusesByStop(std::string_view) const; // функция нужна для того, чтобы по названию остановки получить список автобусов, которые на ней останавливаются
+	                                                                     // задание звучало так: Добавьте в класс TransportCatalogue метод для получения списка автобусов по остановке.
+	void AddDistance(const Stop*, const Stop*, int);
+	int CalculateFullRouteLength(const Bus* bus) const;
 private:
 	std::deque<Stop> stops;
 	std::unordered_map<std::string_view, Stop*> stopname_to_stop;
@@ -45,5 +53,5 @@ private:
 	std::unordered_map<std::string_view, Bus*> busname_to_bus;
 	std::unordered_map<Stop*, std::set<std::string>> stop_to_buses;
 
-	std::unordered_map<std::pair<Stop*, Stop*>, int, Hasher> distances_;
+	std::unordered_map<std::pair<const Stop*, const Stop*>, int, Hasher> distances_;
 };
