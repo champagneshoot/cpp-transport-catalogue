@@ -5,14 +5,12 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
     if (request.substr(0, 4) == "Bus ") 
     {
         std::string bus_name = std::string(request.substr(4));
-        if (auto bus_info = transport_catalogue.GetBusInfo(bus_name)) 
+        auto bus_info_opt = transport_catalogue.GetBusInfo(bus_name);
+        if (bus_info_opt)
         {
-            int total_stops = std::get<0>(*bus_info);
-            int unique_stops = std::get<1>(*bus_info);
-            int full_route_length = std::get<2>(*bus_info);
-            double route_length = std::get<3>(*bus_info);
-            output << "Bus " << bus_name << ": " << total_stops << " stops on route, "
-                << unique_stops << " unique stops, " << full_route_length << " route length, " << static_cast<double>(full_route_length)/route_length<<" curvature\n";
+            const auto& bus_info = *bus_info_opt;
+            output << "Bus " << bus_name << ": " << bus_info.total_stops << " stops on route, "
+                << bus_info.unique_stops << " unique stops, " << bus_info.full_route_length << " route length, " << bus_info.curvature << " curvature\n";
         }
         else 
         {
