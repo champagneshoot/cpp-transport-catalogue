@@ -137,13 +137,12 @@ void ParseStopWithDistances(std::string stop_name,std::string_view str, Transpor
 
         if (stop_ptr && neighbor_stop_ptr) 
         {
-            transport_catalogue.AddDistance(*stop_ptr, *neighbor_stop_ptr, distance);
+            transport_catalogue.AddDistance(stop_ptr, neighbor_stop_ptr, distance);
         }
 
         pos = stop_end + 1;
     }
 }
-
 
 void InputReader::ParseLine(std::string_view line) {
     auto command_description = ParseCommandDescription(line);
