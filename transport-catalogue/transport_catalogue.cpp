@@ -53,30 +53,20 @@ const std::set<std::string>* TransportCatalogue::GetBusesByStop(std::string_view
     return nullptr; 
 }
 
-void TransportCatalogue::AddDistance(Stop& from, Stop& to, int distance)
+void TransportCatalogue::AddDistance(const Stop* from, const Stop* to, int distance) 
 {
-    distances_[{&from, &to}] = distance;
+    distances_[std::make_pair(from, to)] = distance;
 }
 
-std::optional<std::tuple<int, int, int,double>> TransportCatalogue::GetBusInfo(const std::string_view bus_name) const
+int TransportCatalogue::CalculateFullRouteLength(const Bus* bus) const
 {
-    Bus* bus = FindBus(bus_name);
-    if (!bus) 
-    {
-        return std::nullopt;  
-    }
-
-    size_t total_stops = bus->bus_stops.size();
-    std::unordered_set<Stop*> unique_stops(bus->bus_stops.begin(), bus->bus_stops.end());
-    size_t unique_stop_count = unique_stops.size();
-
     int full_route_length = 0;
     for (size_t i = 1; i < bus->bus_stops.size(); ++i)
     {
         auto it = distances_.find({ bus->bus_stops[i - 1], bus->bus_stops[i] });
         if (it != distances_.end())
         {
-            full_route_length += it->second; 
+            full_route_length += it->second;
         }
         else
         {
@@ -87,19 +77,35 @@ std::optional<std::tuple<int, int, int,double>> TransportCatalogue::GetBusInfo(c
             }
         }
     }
+    return full_route_length;
+}
+
+
+std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string_view bus_name) const
+{
+    BusInfo bus_info;
+    Bus* bus = FindBus(bus_name);
+    if (!bus) 
+    {
+        return std::nullopt;  
+    }
+    bus_info.total_stops = bus->bus_stops.size();
+    std::unordered_set<Stop*> unique_stops(bus->bus_stops.begin(), bus->bus_stops.end());
+    bus_info.unique_stops = unique_stops.size();
+    bus_info.full_route_length = CalculateFullRouteLength(bus);
     double route_length = 0.0;
     for (size_t i = 1; i < bus->bus_stops.size(); ++i) 
     {
         route_length += ComputeDistance(bus->bus_stops[i - 1]->stop_coordinates, bus->bus_stops[i]->stop_coordinates);
     }
-    return std::make_tuple(total_stops, unique_stop_count, full_route_length, route_length);
+    bus_info.curvature = static_cast<double>(bus_info.full_route_length) / route_length;
+    return bus_info;
 }
 
-size_t Hasher::operator()(const std::pair<Stop*, Stop*>& stop_pair) const
+size_t Hasher::operator()(const std::pair<const Stop*, const Stop*>& stop_pair) const
 {
-    std::hash <Stop*> ptr_hasher;
+    std::hash <const Stop*> ptr_hasher;
     size_t hash1 = ptr_hasher(stop_pair.first);
     size_t hash2 = ptr_hasher(stop_pair.second);
     return hash1 + hash2 * 8 ;
 }
-
