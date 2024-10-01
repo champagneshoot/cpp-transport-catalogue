@@ -53,9 +53,10 @@ const std::set<std::string>* TransportCatalogue::GetBusesByStop(std::string_view
     return nullptr; 
 }
 
-void TransportCatalogue::AddDistance(const Stop* from, const Stop* to, int distance) 
+void TransportCatalogue::AddDistance(const Stop* from, const Stop* to, int distance)
 {
     distances_[std::make_pair(from, to)] = distance;
+    //нет смысла сразу добавлять from->to и to->from т.к. расстояние между остановками в разные стороны может быть разным
 }
 
 int TransportCatalogue::CalculateFullRouteLength(const Bus* bus) const
@@ -63,22 +64,37 @@ int TransportCatalogue::CalculateFullRouteLength(const Bus* bus) const
     int full_route_length = 0;
     for (size_t i = 1; i < bus->bus_stops.size(); ++i)
     {
-        auto it = distances_.find({ bus->bus_stops[i - 1], bus->bus_stops[i] });
-        if (it != distances_.end())
-        {
-            full_route_length += it->second;
-        }
-        else
+        //auto it = distances_.find({ bus->bus_stops[i - 1], bus->bus_stops[i] });
+        //if (it != distances_.end())
+        //{
+            //full_route_length += it->second;
+            full_route_length += RouthLenghtBetweenTwoStops(bus->bus_stops[i - 1], bus->bus_stops[i]);
+        //}
+        /*else
         {
             auto it_reversed = distances_.find({ bus->bus_stops[i], bus->bus_stops[i - 1] });
             if (it_reversed != distances_.end())
             {
                 full_route_length += it_reversed->second;
             }
-        }
+        }*/
     }
     return full_route_length;
 }
+
+int TransportCatalogue::RouthLenghtBetweenTwoStops(const Stop* from, const Stop* to) const
+{
+    auto it = distances_.find({ from, to });
+    if (it != distances_.end()) {
+        return it->second; 
+    }
+    auto it_reverse = distances_.find({ to, from });
+    if (it_reverse != distances_.end()) {
+        return it_reverse->second; 
+    }
+    return 0;
+}
+
 
 
 std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string_view bus_name) const
