@@ -42,10 +42,12 @@ public:
 	void AddBus(const std::string&, std::vector<std::string_view>);
 	Bus* FindBus(std::string_view) const;
 	std::optional<BusInfo> GetBusInfo(const std::string_view) const;
-	const std::set<std::string>* GetBusesByStop(std::string_view) const; // функция нужна для того, чтобы по названию остановки получить список автобусов, которые на ней останавливаются
+	const std::set<std::string>* GetBusesByStop(std::string_view) const; // функция нужна для того, чтобы по названию остановки получить список автобусы, которые на ней останавливаются
 	                                                                     // задание звучало так: Добавьте в класс TransportCatalogue метод для получения списка автобусов по остановке.
 	void AddDistance(const Stop*, const Stop*, int);
 	int CalculateFullRouteLength(const Bus* bus) const;
+	int RouthLenghtBetweenTwoStops(const Stop*, const Stop*) const;
+
 private:
 	std::deque<Stop> stops;
 	std::unordered_map<std::string_view, Stop*> stopname_to_stop;
