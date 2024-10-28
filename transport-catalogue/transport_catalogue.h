@@ -45,13 +45,6 @@ public:
 	Bus* FindBus(std::string_view) const;
 	std::optional<BusInfo> GetBusInfo(const std::string_view) const;
 	const std::set<std::string>* GetBusesByStop(std::string_view) const;
-	/*если использовать const std::set<std::string>_view& GetBusesByStop(std::string_view) const;
-	то получается такой вывод:
-	Stop Biryulyovo Zapadnoye
-	Stop Biryulyovo Zapadnoye: buses ||| |||
-	это значит, что она ссылается на данные, которые больше не существуют или были изменены.
-	Я совсем не могу понять где это происходит
-	*/
 
 	void AddDistance(const Stop*, const Stop*, int);
 	int CalculateFullRouteLength(const Bus* bus) const;
