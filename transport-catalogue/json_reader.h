@@ -15,9 +15,6 @@ public:
 
     void Process()
     {
-        json::Document doc = json::Load(input_stream);
-        json::Node root = doc.GetRoot();
-
         const auto& base_requests = root.AsMap().at("base_requests").AsArray();
         ProcessBaseRequests(base_requests);
 
@@ -27,7 +24,10 @@ public:
         MapRenderer mr(set);
         mr.RenderStopsAndBuses(catalogue_, svg_doc);
         svg_doc.Render(os);
+    }
 
+    void ProcessRequest()
+    {
         const auto& stat_requests = root.AsMap().at("stat_requests").AsArray();
         if (!stat_requests.empty())
             ProcessStatRequests(stat_requests);
@@ -40,9 +40,13 @@ public:
 private:
     TransportCatalogue catalogue_;
     Settings set;
+
     std::istream& input_stream;
     std::ostream& out;
     std::ostringstream os;
+
+    json::Document doc; 
+    json::Node root; 
 
     svg::Color ProcessColor(const json::Node& color_node);
 
