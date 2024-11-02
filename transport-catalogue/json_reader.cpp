@@ -1,7 +1,12 @@
 #include "json_reader.h"
 
-InformationProcessing::InformationProcessing(TransportCatalogue& catalogue, std::istream& input_stream_, std::ostream& out_) : catalogue_(catalogue), input_stream(input_stream_)
-, out(out_){}
+InformationProcessing::InformationProcessing(TransportCatalogue& catalogue, std::istream& input_stream_, std::ostream& out_)
+    : catalogue_(catalogue), input_stream(input_stream_), out(out_)
+{
+    doc = json::Load(input_stream);
+    root = doc.GetRoot();
+}
+
 
 
 void InformationProcessing::ProcessBaseRequests(const json::Array& base_requests)
@@ -233,3 +238,7 @@ void InformationProcessing::ProcessMapRequest(const json::Dict& map_request, jso
     response["map"] = os.str();
     response_array.emplace_back(std::move(response));
 }
+
+
+
+
