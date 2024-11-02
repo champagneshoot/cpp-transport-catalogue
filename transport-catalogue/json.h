@@ -8,7 +8,8 @@
 #include <unordered_map>
 using namespace std::string_view_literals;
 
-namespace json {
+namespace json 
+{
 
     class Node;
     using Dict = std::map<std::string, Node>;
@@ -20,19 +21,20 @@ namespace json {
         using runtime_error::runtime_error;
     };
 
-    class Node {
-    public:
-        /* Реализуйте Node, используя std::variant */
-        using Value = std::variant<std::nullptr_t, int, std::string, double, bool, Array, Dict>;
+    using Value = std::variant<std::nullptr_t, int, std::string, double, bool, Array, Dict>;
 
-        Node() = default;
-        Node(std::nullptr_t);
-        Node(std::string value);
-        Node(int value);
-        Node(double value);
-        Node(bool value);
-        Node(Array array);
-        Node(Dict map);
+    class Node:Value
+    {
+    public:
+        using Value :: Value;
+        //Node() = default;
+        //Node(std::nullptr_t);
+        //Node(std::string value);
+        //Node(int value);
+        //Node(double value);
+        //Node(bool value);
+        //Node(Array array);
+        //Node(Dict map);
 
         bool IsInt() const;
         bool IsDouble() const;
@@ -58,11 +60,15 @@ namespace json {
         bool operator!=(const Node& rhs) const;
 
     private:
-        Value value_;
+        //Value value_;
     };
+    
+    
 
-    class Document {
+    class Document 
+    {
     public:
+        Document() = default;
         explicit Document(Node root);
 
         const Node& GetRoot() const;
