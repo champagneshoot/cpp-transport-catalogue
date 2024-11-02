@@ -10,6 +10,6 @@ int main()
     //InformationProcessing processor(catalogue, std::cin, std::cout);
     InformationProcessing processor(catalogue, input_file, std::cout);
     processor.Process();
+    processor.ProcessRequest();
     return 0;
 }
-
