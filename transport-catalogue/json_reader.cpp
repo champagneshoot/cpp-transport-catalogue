@@ -1,4 +1,5 @@
 #include "json_reader.h"
+#include "json_builder.h"
 
 InformationProcessing::InformationProcessing(TransportCatalogue& catalogue, std::istream& input_stream_, std::ostream& out_)
     : catalogue_(catalogue), input_stream(input_stream_), out(out_)
@@ -45,10 +46,10 @@ svg::Color InformationProcessing::ProcessColor(const json::Node& color_node)
     {
         return svg::Color(color_node.AsString());
     }
-    else if (color_node.IsArray()) 
+    else if (color_node.IsArray())
     {
         const auto& color_array = color_node.AsArray();
-        if (color_array.size() == 3) 
+        if (color_array.size() == 3)
         {
 
             return svg::Rgb
@@ -180,30 +181,30 @@ void InformationProcessing::ProcessStopRequest(const json::Dict& stop_request, j
     const std::string name = stop_request.at("name").AsString();
     int id = stop_request.at("id").AsInt();
     const std::set<std::string>* buses_ptr = catalogue_.GetBusesByStop(name);
-    json::Dict response;
-    response["request_id"] = id;
 
+    json::Builder builder;
+    builder.StartDict().Key("request_id").Value(id);
     if (catalogue_.FindStop(name) == NULL)
     {
-        response["error_message"] = std::string("not found");
+        builder.Key("error_message").Value("not found");
     }
-
     else if (buses_ptr && !buses_ptr->empty())
     {
-        json::Array buses_array;
+       
+        builder.Key("buses").StartArray();
         for (const auto& bus : *buses_ptr)
         {
-            buses_array.push_back(bus);
+           builder.Value(bus);    
         }
-        response["buses"] = std::move(buses_array);
-
+        builder.EndArray();
     }
     else
     {
-        json::Array buses_array = {};
-        response["buses"] = buses_array;
+        builder.Key("buses").StartArray().EndArray();
     }
-    response_array.emplace_back(std::move(response));
+
+    builder.EndDict();
+    response_array.push_back(builder.Build());
 }
 
 void InformationProcessing::ProcessBusRequest(const json::Dict& bus_request, json::Array& response_array)
@@ -212,31 +213,38 @@ void InformationProcessing::ProcessBusRequest(const json::Dict& bus_request, jso
     int id = bus_request.at("id").AsInt();
     auto bus_info_opt = catalogue_.GetBusInfo(name);
 
-    json::Dict response;
-    response["request_id"] = id;
+    json::Builder builder;
+    builder.StartDict()
+        .Key("request_id").Value(id);
+
     if (bus_info_opt)
     {
         const auto& bus_info = *bus_info_opt;
-        response["curvature"] = bus_info.curvature;
-        response["route_length"] = bus_info.full_route_length;
-        response["stop_count"] = bus_info.total_stops;
-        response["unique_stop_count"] = bus_info.unique_stops;
+        builder.Key("curvature").Value(bus_info.curvature)
+            .Key("route_length").Value(bus_info.full_route_length)
+            .Key("stop_count").Value(bus_info.total_stops)
+            .Key("unique_stop_count").Value(bus_info.unique_stops);
     }
     else
     {
-        response["error_message"] = std::string("not found");
+        builder.Key("error_message").Value("not found");
     }
-    response_array.emplace_back(std::move(response));
+
+    builder.EndDict();
+    response_array.push_back(builder.Build());
 }
 
 void InformationProcessing::ProcessMapRequest(const json::Dict& map_request, json::Array& response_array)
 {
     int id = map_request.at("id").AsInt();
 
-    json::Dict response;
-    response["request_id"] = id;
-    response["map"] = os.str();
-    response_array.emplace_back(std::move(response));
+    json::Builder builder;
+    builder.StartDict()
+        .Key("request_id").Value(id)
+        .Key("map").Value(os.str())
+        .EndDict();
+
+    response_array.push_back(builder.Build());
 }
 
 
