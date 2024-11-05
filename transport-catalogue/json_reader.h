@@ -45,8 +45,8 @@ private:
     std::ostream& out;
     std::ostringstream os;
 
-    json::Document doc; 
-    json::Node root; 
+    json::Document doc;
+    json::Node root;
 
     svg::Color ProcessColor(const json::Node& color_node);
 
