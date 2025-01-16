@@ -8,8 +8,6 @@ InformationProcessing::InformationProcessing(TransportCatalogue& catalogue, std:
     root = doc.GetRoot();
 }
 
-
-
 void InformationProcessing::ProcessBaseRequests(const json::Array& base_requests)
 {
     for (const auto& request : base_requests)
@@ -142,6 +140,10 @@ void InformationProcessing::ProcessStatRequests(const json::Array& stat_requests
         {
             ProcessMapRequest(request.AsMap(), response_array);
         }
+        else if (type == "Route")
+        {
+            ProcessRouteRequest(request.AsMap(), response_array);
+        }
     }
     json::Document doc(json::Node(std::move(response_array)));
     json::Print(doc, out);
@@ -174,6 +176,13 @@ void InformationProcessing::ProcessRendererSet(const json::Dict& renderer_settin
     {
         set.color_palette.push_back(ProcessColor(color));
     }
+}
+
+void InformationProcessing::ProcessRoutingSettings(const json::Dict& routing_settings)
+{
+    routting_settings_.bus_wait_time_ = routing_settings.at("bus_wait_time").AsInt();
+    routting_settings_.bus_velocity_ = routing_settings.at("bus_velocity").AsDouble();
+    transport_router_.reset();
 }
 
 void InformationProcessing::ProcessStopRequest(const json::Dict& stop_request, json::Array& response_array)
@@ -247,6 +256,47 @@ void InformationProcessing::ProcessMapRequest(const json::Dict& map_request, jso
     response_array.push_back(builder.Build());
 }
 
+void InformationProcessing::ProcessRouteRequest(const json::Dict& route_request, json::Array& response_array) 
+{
+    if (!transport_router_) {
+        transport_router_.emplace(routting_settings_);
+        transport_router_->BuildGraph(catalogue_); 
+    }
 
+    int id = route_request.at("id").AsInt();
+    const auto from = route_request.at("from").AsString();
+    const auto to = route_request.at("to").AsString();
 
+    json::Builder builder;
+    builder.StartDict().Key("request_id").Value(id);
+    auto route_info = transport_router_->FindRoute(from, to);
 
+    if (!route_info) {
+        builder.Key("error_message").Value("not found");
+    }
+    else 
+    {
+        builder.Key("total_time").Value(route_info->total_time);
+        builder.Key("items").StartArray();
+        for (const auto& item : route_info->items) 
+        {
+            builder.StartDict()
+                .Key("type").Value(item.type == RouteItem::ItemType::Wait ? "Wait" : "Bus");
+            if (item.type == RouteItem::ItemType::Wait) 
+            {
+                builder.Key("stop_name").Value(item.name);
+            }
+            else 
+            { 
+                builder.Key("bus").Value(item.name)
+                    .Key("span_count").Value(static_cast<int>(item.span_count));
+            }
+            builder.Key("time").Value(item.time);
+            builder.EndDict();
+        }
+        builder.EndArray();
+     }
+
+    builder.EndDict();
+    response_array.push_back(builder.Build());
+}
