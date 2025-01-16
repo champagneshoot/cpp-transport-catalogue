@@ -50,6 +50,9 @@ public:
 	int CalculateFullRouteLength(const Bus* bus) const;
 	int RouteLenghtBetweenTwoStops(const Stop*, const Stop*) const;
 
+	std::deque<Bus> GetBuses() const { return buses; }
+	std::deque<Stop> GetStops() const {	return stops; }
+
 
 	std::vector<const Bus*> GetAllBuses() const
 	{
@@ -72,6 +75,14 @@ public:
 			all_stops.push_back(&stop);
 		}
 		return all_stops;
+	}
+
+	const std::unordered_map<std::string_view, Stop*>& GetStopNameToStopMap() const {
+		return stopname_to_stop;
+	}
+
+	const std::unordered_map<std::string_view, Bus*>& GetBusNameToBusMap() const {
+		return busname_to_bus;
 	}
 
 private:
