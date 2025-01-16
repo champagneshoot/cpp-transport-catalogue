@@ -180,8 +180,8 @@ void InformationProcessing::ProcessRendererSet(const json::Dict& renderer_settin
 
 void InformationProcessing::ProcessRoutingSettings(const json::Dict& routing_settings)
 {
-    routting_settings_.bus_wait_time_ = routing_settings.at("bus_wait_time").AsInt();
-    routting_settings_.bus_velocity_ = routing_settings.at("bus_velocity").AsDouble();
+    bus_wait_time_ = routing_settings.at("bus_wait_time").AsInt();
+    bus_velocity_ = routing_settings.at("bus_velocity").AsDouble();
     transport_router_.reset();
 }
 
@@ -199,11 +199,11 @@ void InformationProcessing::ProcessStopRequest(const json::Dict& stop_request, j
     }
     else if (buses_ptr && !buses_ptr->empty())
     {
-       
+
         builder.Key("buses").StartArray();
         for (const auto& bus : *buses_ptr)
         {
-           builder.Value(bus);    
+            builder.Value(bus);
         }
         builder.EndArray();
     }
@@ -256,10 +256,10 @@ void InformationProcessing::ProcessMapRequest(const json::Dict& map_request, jso
     response_array.push_back(builder.Build());
 }
 
-void InformationProcessing::ProcessRouteRequest(const json::Dict& route_request, json::Array& response_array) 
+void InformationProcessing::ProcessRouteRequest(const json::Dict& route_request, json::Array& response_array)
 {
     if (!transport_router_) {
-        transport_router_.emplace(routting_settings_);
+        transport_router_.emplace(bus_wait_time_, bus_velocity_);
         transport_router_->BuildGraph(catalogue_); 
     }
 
@@ -269,24 +269,25 @@ void InformationProcessing::ProcessRouteRequest(const json::Dict& route_request,
 
     json::Builder builder;
     builder.StartDict().Key("request_id").Value(id);
+
     auto route_info = transport_router_->FindRoute(from, to);
 
     if (!route_info) {
         builder.Key("error_message").Value("not found");
     }
-    else 
+    else
     {
         builder.Key("total_time").Value(route_info->total_time);
         builder.Key("items").StartArray();
-        for (const auto& item : route_info->items) 
+        for (const auto& item : route_info->items)
         {
             builder.StartDict()
                 .Key("type").Value(item.type == RouteItem::ItemType::Wait ? "Wait" : "Bus");
-            if (item.type == RouteItem::ItemType::Wait) 
+            if (item.type == RouteItem::ItemType::Wait)
             {
                 builder.Key("stop_name").Value(item.name);
             }
-            else 
+            else
             { 
                 builder.Key("bus").Value(item.name)
                     .Key("span_count").Value(static_cast<int>(item.span_count));
@@ -295,8 +296,9 @@ void InformationProcessing::ProcessRouteRequest(const json::Dict& route_request,
             builder.EndDict();
         }
         builder.EndArray();
-     }
+    }
 
     builder.EndDict();
     response_array.push_back(builder.Build());
 }
+
