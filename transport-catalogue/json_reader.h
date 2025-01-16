@@ -47,7 +47,9 @@ private:
     TransportCatalogue catalogue_;
     Settings set;
     std::optional<TransportRouter> transport_router_;
-    RouttingSettings routting_settings_;
+
+    int bus_wait_time_ = 0;
+    double bus_velocity_ = 0.0;
 
     std::istream& input_stream;
     std::ostream& out;
@@ -67,4 +69,5 @@ private:
     void ProcessMapRequest(const json::Dict& map_request, json::Array& response_array);
     void ProcessRouteRequest(const json::Dict& route_request, json::Array& response_array);
 };
+
 
