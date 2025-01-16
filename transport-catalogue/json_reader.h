@@ -6,6 +6,7 @@
 #include "transport_catalogue.h"
 #include "json.h"
 #include "map_renderer.h"
+#include "transport_router.h"
 
 class InformationProcessing
 {
@@ -20,6 +21,10 @@ public:
 
         const auto& render_settings = root.AsMap().at("render_settings").AsMap();
         ProcessRendererSet(render_settings);
+
+        const auto& routing_settings = root.AsMap().at("routing_settings").AsMap();
+        ProcessRoutingSettings(routing_settings);
+
         svg::Document svg_doc;
         MapRenderer mr(set);
         mr.RenderStopsAndBuses(catalogue_, svg_doc);
@@ -36,10 +41,13 @@ public:
     void ProcessBaseRequests(const json::Array& base_requests);
     void ProcessStatRequests(const json::Array& stat_requests);
     void ProcessRendererSet(const json::Dict& renderer_settings);
+    void ProcessRoutingSettings(const json::Dict& routing_settings);
 
 private:
     TransportCatalogue catalogue_;
     Settings set;
+    std::optional<TransportRouter> transport_router_;
+    RouttingSettings routting_settings_;
 
     std::istream& input_stream;
     std::ostream& out;
@@ -57,4 +65,6 @@ private:
     void ProcessStopRequest(const json::Dict& stop_request, json::Array& response_array);
     void ProcessBusRequest(const json::Dict& bus_request, json::Array& response_array);
     void ProcessMapRequest(const json::Dict& map_request, json::Array& response_array);
+    void ProcessRouteRequest(const json::Dict& route_request, json::Array& response_array);
 };
+
