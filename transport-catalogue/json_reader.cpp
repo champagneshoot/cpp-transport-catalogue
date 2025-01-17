@@ -259,8 +259,7 @@ void InformationProcessing::ProcessMapRequest(const json::Dict& map_request, jso
 void InformationProcessing::ProcessRouteRequest(const json::Dict& route_request, json::Array& response_array)
 {
     if (!transport_router_) {
-        transport_router_.emplace(bus_wait_time_, bus_velocity_);
-        transport_router_->BuildGraph(catalogue_); 
+        transport_router_.emplace(catalogue_, bus_wait_time_, bus_velocity_);
     }
 
     int id = route_request.at("id").AsInt();
@@ -301,4 +300,5 @@ void InformationProcessing::ProcessRouteRequest(const json::Dict& route_request,
     builder.EndDict();
     response_array.push_back(builder.Build());
 }
+
 
