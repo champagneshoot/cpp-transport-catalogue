@@ -1,10 +1,8 @@
 #include "transport_router.h"
 
-TransportRouter::TransportRouter(int bus_wait_time, double bus_velocity)
-    : bus_wait_time_(bus_wait_time), bus_velocity_(bus_velocity) {
-}
-
-void TransportRouter::BuildGraph(const TransportCatalogue& catalogue) {
+TransportRouter::TransportRouter(const TransportCatalogue& catalogue, int bus_wait_time, double bus_velocity)
+    : bus_wait_time_(bus_wait_time), bus_velocity_(bus_velocity) 
+{
     InitializeStops(catalogue);
     AddBusEdges(catalogue);
     router_ = std::make_unique<graph::Router<double>>(graph_);
@@ -103,4 +101,6 @@ std::optional<RouteResult> TransportRouter::FindRoute(std::string_view stop_from
 
     return result;
 }
+
+
 
