@@ -1,15 +1,15 @@
 #include "transport_router.h"
 
 TransportRouter::TransportRouter(const TransportCatalogue& catalogue, int bus_wait_time, double bus_velocity)
-    : bus_wait_time_(bus_wait_time), bus_velocity_(bus_velocity) 
+    : catalogue_(catalogue), bus_wait_time_(bus_wait_time), bus_velocity_(bus_velocity)
 {
-    InitializeStops(catalogue);
-    AddBusEdges(catalogue);
+    InitializeStops();
+    AddBusEdges();
     router_ = std::make_unique<graph::Router<double>>(graph_);
 }
 
-void TransportRouter::InitializeStops(const TransportCatalogue& catalogue) {
-    const auto& stops = catalogue.GetStopNameToStopMap();
+void TransportRouter::InitializeStops() {
+    const auto& stops = catalogue_.GetStopNameToStopMap();
     size_t vertex_count = stops.size() * 2;
     graph_ = graph::DirectedWeightedGraph<double>(vertex_count);
 
@@ -23,8 +23,8 @@ void TransportRouter::InitializeStops(const TransportCatalogue& catalogue) {
     }
 }
 
-void TransportRouter::AddBusEdges(const TransportCatalogue& catalogue) {
-    const auto& buses = catalogue.GetBusNameToBusMap();
+void TransportRouter::AddBusEdges() {
+    const auto& buses = catalogue_.GetBusNameToBusMap();
 
     for (const auto& [bus_name, bus_info] : buses) 
     {
@@ -39,7 +39,7 @@ void TransportRouter::AddBusEdges(const TransportCatalogue& catalogue) {
 
                 double total_distance_forward = 0.0;
                 for (size_t k = i + 1; k <= j; ++k) {
-                    total_distance_forward += catalogue.RouteLenghtBetweenTwoStops(stops[k - 1], stops[k]);
+                    total_distance_forward += catalogue_.RouteLenghtBetweenTwoStops(stops[k - 1], stops[k]);
                 }
 
                 double travel_time_forward = total_distance_forward / (bus_velocity_ * (1000.0 / 60.0));
@@ -50,7 +50,7 @@ void TransportRouter::AddBusEdges(const TransportCatalogue& catalogue) {
                 if (!bus_info->is_roundtrip) {
                     double total_distance_backward = 0.0;
                     for (size_t k = j; k > i; --k) {
-                        total_distance_backward += catalogue.RouteLenghtBetweenTwoStops(stops[k], stops[k - 1]);
+                        total_distance_backward += catalogue_.RouteLenghtBetweenTwoStops(stops[k], stops[k - 1]);
                     }
                     double travel_time_backward = total_distance_backward / (bus_velocity_ * (1000.0 / 60.0));
                     graph_.AddEdge(graph::Edge<double>{static_cast<std::string>(bus_name), span_count, 
@@ -101,6 +101,8 @@ std::optional<RouteResult> TransportRouter::FindRoute(std::string_view stop_from
 
     return result;
 }
+
+
 
 
 
