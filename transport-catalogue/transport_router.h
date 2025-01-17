@@ -32,9 +32,10 @@ public:
     std::optional<RouteResult> FindRoute(std::string_view stop_from, std::string_view stop_to) const;
 
 private:
-    void InitializeStops(const TransportCatalogue& catalogue);
-    void AddBusEdges(const TransportCatalogue& catalogue);
+    void InitializeStops();
+    void AddBusEdges();
 
+    const TransportCatalogue catalogue_;
     int bus_wait_time_;
     double bus_velocity_;
 
@@ -42,6 +43,7 @@ private:
     std::map<std::string_view, graph::VertexId> stop_ids_;
     std::unique_ptr<graph::Router<double>> router_;
 };
+
 
 
 
